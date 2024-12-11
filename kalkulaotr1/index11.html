@@ -89,18 +89,6 @@
             color: #333; 
         }
 
-        .chart-container {
-            width: 100%;
-            max-width: 600px;
-            margin-top: 30px;
-            padding: 20px;
-        }
-
-        canvas {
-            width: 100% !important;
-            height: auto !important;
-        }
-
         .explanation {
             font-size: 16px;
             margin-top: 15px;
@@ -131,15 +119,10 @@
         <div class="weather-output" id="weather-output"></div>
     </div>
 
-    <div class="chart-container">
-        <canvas id="weatherChart" width="600" height="300"></canvas>
-    </div>
-
     <div class="explanation" id="explanation">
         
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         function predictWeather() {
             const temp = parseFloat(document.getElementById("temp").value);
@@ -198,54 +181,6 @@
                 - <strong>Kelembaban:</strong> Jika kelembaban tinggi (>80%), kemungkinan hujan lebih besar.<br>
                 - <strong>Angin:</strong> Kecepatan angin mempengaruhi kondisi cuaca dan kemungkinan hujan.<br>
             `;
-
-            const ctx = document.getElementById('weatherChart').getContext('2d');
-            const weatherChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['Sekarang', '3 Jam Mendatang'],
-                    datasets: [{
-                        label: 'Suhu (°C)',
-                        data: [temp, predictedTemp],
-                        borderColor: '#0072ff',
-                        backgroundColor: 'rgba(0, 114, 255, 0.2)',
-                        fill: true,
-                        tension: 0.3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return context.dataset.label + ': ' + context.raw.toFixed(2) + '°C';
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Waktu'
-                            }
-                        },
-                        y: {
-                            title: {
-                                display: true,
-                                text: 'Suhu (°C)'
-                            },
-                            beginAtZero: false,
-                            suggestedMin: Math.min(temp, predictedTemp) - 5,
-                            suggestedMax: Math.max(temp, predictedTemp) + 5
-                        }
-                    }
-                }
-            });
         }
     </script>
 </body>
