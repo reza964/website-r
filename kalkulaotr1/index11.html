@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prakiraan Cuaca Metode Integrasi dan Diferensiasi</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #ffffff; 
+            color: #333; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1 {
+            margin: 20px 0;
+            font-size: 28px;
+            text-align: center;
+            color: #333; 
+        }
+
+        .calculator {
+            background: #f9f9f9; 
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); 
+            text-align: center;
+            width: 400px;
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            margin: 12px 0 6px;
+            text-align: left;
+            font-size: 16px;
+            color: #333; 
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 2px solid #ccc;
+            border-radius: 6px;
+            outline: none;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus {
+            border-color: #0072ff;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            background: #0072ff; 
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background: #005bb5; 
+        }
+
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+            text-align: left;
+            color: #333; 
+        }
+
+        .weather-output {
+            font-size: 22px;
+            font-weight: bold;
+            margin-top: 10px;
+            text-align: center;
+            color: #333; 
+        }
+
+        .chart-container {
+            width: 100%;
+            max-width: 600px;
+            margin-top: 30px;
+            padding: 20px;
+        }
+
+        canvas {
+            width: 100% !important;
+            height: auto !important;
+        }
+
+        .explanation {
+            font-size: 16px;
+            margin-top: 15px;
+            text-align: left;
+            color: #333;
+        }
+
+    </style>
+</head>
+<body>
+    <h1>Prakiraan Cuaca</h1>
+    <div class="calculator">
+        <label for="temp">Suhu Saat Ini (°C):</label>
+        <input type="number" id="temp" placeholder="Masukkan suhu saat ini">
+
+        <label for="humidity">Kelembaban (%):</label>
+        <input type="number" id="humidity" placeholder="Masukkan kelembaban saat ini">
+
+        <label for="wind-speed">Kecepatan Angin (m/s):</label>
+        <input type="number" id="wind-speed" placeholder="Masukkan kecepatan angin saat ini">
+
+        <label for="change">Perubahan Suhu (°C/jam):</label>
+        <input type="number" id="change" placeholder="Masukkan perubahan suhu per jam">
+
+        <button onclick="predictWeather()">Prediksi Cuaca</button>
+
+        <div class="result" id="result"></div>
+        <div class="weather-output" id="weather-output"></div>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="weatherChart" width="600" height="300"></canvas>
+    </div>
+
+    <div class="explanation" id="explanation">
+        
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        function predictWeather() {
+            const temp = parseFloat(document.getElementById("temp").value);
+            const humidity = parseFloat(document.getElementById("humidity").value);
+            const windSpeed = parseFloat(document.getElementById("wind-speed").value);
+            const change = parseFloat(document.getElementById("change").value);
+
+            const resultElement = document.getElementById("result");
+            const outputElement = document.getElementById("weather-output");
+            const explanationElement = document.getElementById("explanation");
+
+            if (isNaN(temp) || isNaN(humidity) || isNaN(windSpeed) || isNaN(change)) {
+                resultElement.innerHTML = "<strong>Harap masukkan semua data dengan benar!</strong>";
+                outputElement.innerHTML = "";
+                explanationElement.innerHTML = "";
+                return;
+            }
+
+            
+            const predictedTemp = temp + (change * 3); 
+            const humidityFactor = humidity > 70 ? "Hujan mungkin terjadi" : "Cuaca cenderung cerah";
+            let windFactor = "Angin tenang";
+            
+            
+            if (windSpeed > 5) {
+                windFactor = "Angin kencang berpotensi membawa perubahan cuaca";
+            }
+
+            let prediction = `Cuaca saat ini diperkirakan akan menjadi ${humidityFactor}. ${windFactor}`;
+            let weatherCondition = "Cerah";
+
+            if (predictedTemp < 20 && humidity > 80) {
+                prediction = "Hujan kemungkinan besar akan terjadi.";
+                weatherCondition = "Hujan";
+            } else if (predictedTemp > 30 && humidity < 50) {
+                prediction = "Cuaca cerah dan panas.";
+                weatherCondition = "Cerah";
+            } else {
+                prediction = "Cuaca cenderung mendung dengan kemungkinan hujan ringan.";
+                weatherCondition = "Mendung";
+            }
+
+            
+            resultElement.innerHTML = `
+                <strong>Prakiraan Cuaca Harian:</strong><br>
+                Suhu saat ini: ${temp.toFixed(2)}°C<br>
+                Prediksi suhu 3 jam ke depan: ${predictedTemp.toFixed(2)}°C<br>
+                ${prediction}
+            `;
+            outputElement.innerHTML = weatherCondition;
+
+            
+            explanationElement.innerHTML = ` 
+                <strong>Keterangan:</strong><br>
+                - <strong>Suhu:</strong> Menunjukkan suhu saat ini dan prediksi suhu 3 jam ke depan.<br>
+                - <strong>Kelembaban:</strong> Jika kelembaban tinggi (>80%), kemungkinan hujan lebih besar.<br>
+                - <strong>Angin:</strong> Kecepatan angin mempengaruhi kondisi cuaca dan kemungkinan hujan.<br>
+            `;
+
+            const ctx = document.getElementById('weatherChart').getContext('2d');
+            const weatherChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Sekarang', '3 Jam Mendatang'],
+                    datasets: [{
+                        label: 'Suhu (°C)',
+                        data: [temp, predictedTemp],
+                        borderColor: '#0072ff',
+                        backgroundColor: 'rgba(0, 114, 255, 0.2)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.raw.toFixed(2) + '°C';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Waktu'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Suhu (°C)'
+                            },
+                            beginAtZero: false,
+                            suggestedMin: Math.min(temp, predictedTemp) - 5,
+                            suggestedMax: Math.max(temp, predictedTemp) + 5
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

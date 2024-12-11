@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kalkulator Modeling Pergerakan Atmosfer</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      line-height: 1.6;
+      background: #f4f4f9;
+      color: #333;
+    }
+
+    header {
+      background: #0138fd;
+      color: white;
+      padding: 10px 20px;
+      text-align: center;
+    }
+
+    h1 {
+      color: #010059;
+    }
+
+    .calculator {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+      margin: 30px auto;
+    }
+
+    label {
+      display: block;
+      margin: 10px 0 5px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #0138fd;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #005bb5;
+    }
+
+    #result {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #333;
+    }
+
+    #conclusion {
+      margin-top: 20px;
+      font-size: 16px;
+      color: #333;
+      font-weight: bold;
+    }
+
+    footer {
+      text-align: center;
+      background: #0020ee;
+      color: white;
+      padding: 10px 0;
+      margin-top: 30px;
+    }
+
+    canvas {
+      max-width: 100%;
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">Kalkulator Pergerakan Atmosfer</div>
+  </header>
+
+  <main>
+    <section class="calculator">
+      <h1>Modeling Pergerakan Atmosfer</h1>
+      <p>Masukkan data berikut untuk menghitung pergerakan atmosfer menggunakan metode integrasi dan diferensiasi.</p>
+
+      <label for="initialSpeed">Kecepatan Angin (m/s):</label>
+      <input type="number" id="initialSpeed" placeholder="Contoh: 5 (Kecepatan angin rata-rata)" required>
+
+      <label for="initialTemperature">Suhu (°C):</label>
+      <input type="number" id="initialTemperature" placeholder="Contoh: 25 (Suhu udara)" required>
+
+      <label for="pressure">Tekanan Udara (hPa):</label>
+      <input type="number" id="pressure" placeholder="Contoh: 1013 (Tekanan udara standar)" required>
+
+      <label for="time">Waktu (jam):</label>
+      <input type="number" id="time" placeholder="Contoh: 3 (Durasi waktu untuk perhitungan)" required>
+
+      <button onclick="calculateMovement()">Hitung Pergerakan Atmosfer</button>
+
+      <div id="result"></div>
+      <div id="conclusion"></div>
+
+      <canvas id="chart" width="400" height="200"></canvas>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2024 Kalkulator Pergerakan Atmosfer. All rights reserved.</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    function calculateMovement() {
+      const initialSpeed = parseFloat(document.getElementById("initialSpeed").value);
+      const initialTemperature = parseFloat(document.getElementById("initialTemperature").value);
+      const pressure = parseFloat(document.getElementById("pressure").value);
+      const time = parseFloat(document.getElementById("time").value);
+
+      const resultElement = document.getElementById("result");
+      const conclusionElement = document.getElementById("conclusion");
+
+      if (isNaN(initialSpeed) || isNaN(initialTemperature) || isNaN(pressure) || isNaN(time)) {
+        resultElement.innerHTML = "<strong>Harap masukkan semua data dengan benar!</strong>";
+        return;
+      }
+
+      const windSpeedChange = calculateWindSpeedChange(initialSpeed, time);
+
+      const temperatureChange = calculateTemperatureChange(initialTemperature, time);
+
+      const finalSpeed = initialSpeed + windSpeedChange;
+      const finalTemperature = initialTemperature + temperatureChange;
+
+      resultElement.innerHTML = `
+        <strong>Hasil Perhitungan Pergerakan Atmosfer:</strong><br>
+        Kecepatan angin awal: ${initialSpeed.toFixed(2)} m/s<br>
+        Perubahan kecepatan angin: ${windSpeedChange.toFixed(2)} m/s<br>
+        Kecepatan angin akhir: ${finalSpeed.toFixed(2)} m/s<br>
+        Suhu awal: ${initialTemperature.toFixed(2)} °C<br>
+        Perubahan suhu: ${temperatureChange.toFixed(2)} °C<br>
+        Suhu akhir: ${finalTemperature.toFixed(2)} °C
+      `;
+
+      if (windSpeedChange > 0) {
+        conclusionElement.innerHTML = "Kecepatan angin meningkat, kemungkinan ada pergerakan atmosfer yang signifikan.";
+      } else {
+        conclusionElement.innerHTML = "Kecepatan angin tidak banyak berubah, kondisi atmosfer relatif stabil.";
+      }
+
+      if (temperatureChange < 0) {
+        conclusionElement.innerHTML += "<br>Suhu cenderung menurun, menunjukkan pendinginan atmosfer.";
+      } else {
+        conclusionElement.innerHTML += "<br>Suhu cenderung meningkat, menunjukkan pemanasan atmosfer.";
+      }
+
+      const ctx = document.getElementById('chart').getContext('2d');
+      const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['Awal', 'Akhir'],
+          datasets: [
+            {
+              label: 'Kecepatan Angin (m/s)',
+              data: [initialSpeed, finalSpeed],
+              borderColor: 'rgb(75, 192, 192)',
+              fill: false
+            },
+            {
+              label: 'Suhu (°C)',
+              data: [initialTemperature, finalTemperature],
+              borderColor: 'rgb(255, 99, 132)',
+              fill: false
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+
+    function calculateWindSpeedChange(initialSpeed, time) {
+      const windSpeedRate = 0.2; 
+      return windSpeedRate * time;
+    }
+
+    function calculateTemperatureChange(initialTemperature, time) {
+      const temperatureRate = -0.5; 
+      return temperatureRate * time;
+    }
+  </script>
+
+</body>
+</html>

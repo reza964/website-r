@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Energi Atmosfer</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f4f4f4;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1 {
+            margin: 20px 0;
+            font-size: 28px;
+            text-align: center;
+            color: #333;
+        }
+
+        .calculator {
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 400px;
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            margin: 12px 0 6px;
+            text-align: left;
+            font-size: 16px;
+            color: #333;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 2px solid #ccc;
+            border-radius: 6px;
+            outline: none;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus {
+            border-color: #0072ff;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            background: #0072ff;
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background: #005bb5;
+        }
+
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+            text-align: left;
+            color: #333;
+        }
+
+        .energy-output {
+            font-size: 22px;
+            font-weight: bold;
+            margin-top: 10px;
+            text-align: center;
+            color: #333;
+        }
+
+        .chart-container {
+            width: 100%;
+            max-width: 600px;
+            margin-top: 30px;
+            padding: 20px;
+        }
+
+        canvas {
+            width: 100% !important;
+            height: auto !important;
+        }
+
+    </style>
+</head>
+<body>
+    <h1>Kalkulator Energi Atmosfer</h1>
+    <div class="calculator">
+        <label for="temperature">Suhu (°C):</label>
+        <input type="number" id="temperature" placeholder="Masukkan suhu atmosfer (°C)">
+
+        <label for="pressure">Tekanan (hPa):</label>
+        <input type="number" id="pressure" placeholder="Masukkan tekanan atmosfer (hPa)">
+
+        <label for="height">Tinggi (m):</label>
+        <input type="number" id="height" placeholder="Masukkan tinggi (m)">
+
+        <label for="time">Waktu (detik):</label>
+        <input type="number" id="time" placeholder="Masukkan waktu (detik)">
+
+        <button onclick="calculateEnergy()">Hitung Energi</button>
+
+        <div class="result" id="result"></div>
+        <div class="energy-output" id="energy-output"></div>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="energyChart" width="600" height="300"></canvas>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        function calculateEnergy() {
+            const temperature = parseFloat(document.getElementById("temperature").value);
+            const pressure = parseFloat(document.getElementById("pressure").value);
+            const height = parseFloat(document.getElementById("height").value);
+            const time = parseFloat(document.getElementById("time").value);
+
+            const resultElement = document.getElementById("result");
+            const energyElement = document.getElementById("energy-output");
+
+            if (isNaN(temperature) || isNaN(pressure) || isNaN(height) || isNaN(time)) {
+                resultElement.innerHTML = "<strong>Harap masukkan semua data dengan benar!</strong>";
+                energyElement.innerHTML = "";
+                return;
+            }
+
+            const g = 9.81; 
+            const airDensity = 1.225; 
+            const specificHeat = 1005; 
+
+
+            const potentialEnergy = airDensity * g * height * time;
+
+            const velocity = 10; 
+            const kineticEnergy = 0.5 * airDensity * Math.pow(velocity, 2) * height * time;
+
+            const thermalEnergy = specificHeat * airDensity * temperature * height * time;
+
+            const totalEnergy = potentialEnergy + kineticEnergy + thermalEnergy;
+
+            resultElement.innerHTML = `
+                <strong>Energi di Atmosfer:</strong><br>
+                Energi Potensial: ${potentialEnergy.toFixed(2)} J<br>
+                Energi Kinetik: ${kineticEnergy.toFixed(2)} J<br>
+                Energi Termal: ${thermalEnergy.toFixed(2)} J<br>
+            `;
+            energyElement.innerHTML = `Total Energi Atmosfer: ${totalEnergy.toFixed(2)} J`;
+
+            const ctx = document.getElementById('energyChart').getContext('2d');
+            const energyChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Energi Potensial', 'Energi Kinetik', 'Energi Termal'],
+                    datasets: [{
+                        label: 'Energi (J)',
+                        data: [potentialEnergy, kineticEnergy, thermalEnergy],
+                        backgroundColor: ['#FF5733', '#33FF57', '#3357FF'],
+                        borderColor: ['#FF5733', '#33FF57', '#3357FF'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Energi (Joule)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
